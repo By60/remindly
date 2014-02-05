@@ -1,4 +1,4 @@
-package com.remindly.service.framework.dispatcher;
+package com.remindly.service.dispatcher;
 
 import com.remindly.service.utils.Configuration;
 import com.remindly.service.utils.Log;
@@ -20,7 +20,7 @@ public class SMSDispatcher {
 			Log.i("Connecting to Google Voice...");
 			gvAccount = new Voice(gvUsername, gvPassword);
 			if(gvAccount.isLoggedIn())
-				Log.i("\nConnected to Google Voice!");
+				Log.i("Connected to Google Voice!");
 			else
 				Log.w("Unable to log in to Google Voice account.");
 		} catch(Exception e) {

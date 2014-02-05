@@ -19,7 +19,7 @@ public class Configuration {
 			configuration.load(new BufferedReader(new FileReader(path)));
 			return true;
 		} catch(FileNotFoundException e) {
-			Log.e("Configuration file not found at " + path + ".");
+			Log.e("Configuration file missing at " + path + ".");
 		} catch(IOException e) {
 			Log.e("An error occurred while loading the properites file.");
 			Log.stackTrace(e);
