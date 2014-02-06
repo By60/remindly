@@ -1,6 +1,7 @@
-package com.remindly.service.framework;
+package com.remindly.service;
 
-import com.remindly.service.framework.dispatcher.SMSDispatcher;
+import com.remindly.service.database.SQLConnector;
+import com.remindly.service.dispatcher.SMSDispatcher;
 import com.remindly.service.utils.Configuration;
 import com.remindly.service.utils.Log;
 
@@ -8,9 +9,13 @@ public class Main {
 
 	public static final String VERSION = "v1.0_alpha";
 	
+	private static SMSDispatcher smsDispatcher;
+	private static SQLConnector database;
+	
 	public static void main(String[] args) {
 		init();
 		
+		while(true);
 	}
 
 	private static void init() {
@@ -25,8 +30,16 @@ public class Main {
 		// Load configuration file
 		Configuration.loadConfiguration();
 		
+		// Initialize MySQL connection
+		database = new SQLConnector();
+		database.init();
+		
 		// Initialize SMS Dispatcher
-		SMSDispatcher smsDispatcher = new SMSDispatcher();
+		smsDispatcher = new SMSDispatcher();
 		smsDispatcher.init();
+		
+		Log.i("Initialization complete!");
 	}
+	
+	
 }

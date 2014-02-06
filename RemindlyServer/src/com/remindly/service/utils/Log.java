@@ -29,7 +29,7 @@ public class Log {
 		String exception = e.toString();
 		StackTraceElement[] stackTrace = e.getStackTrace();
 		for(int i = 0; i < stackTrace.length; i++)
-			exception += "\n     " + stackTrace[i].toString();
+			exception += "\n     at " + stackTrace[i].toString();
 		System.err.println(exception);
 	}
 }
