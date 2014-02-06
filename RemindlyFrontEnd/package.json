@@ -1,13 +1,13 @@
 {
-  "name": "IntroHCI",
+  "name": "Remindly",
   "version": "0.0.1",
-  "author": "Intro HCI Staff",
+  "author": "remindly",
 
   "repository": {
     "type": "git",
-    "url": "https://github.com/IntroHCI/lab5"
+    "url": "https://github.com/by60/remindly"
   },
-  "license": "MIT",
+  "license": "remindly",
 
   "private": true,
   "scripts": {
