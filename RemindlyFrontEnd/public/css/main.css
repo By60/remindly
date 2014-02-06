@@ -1,0 +1,94 @@
+
+
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	font-family: "helvetica neue";
+	font-weight: lighter;
+}
+
+#body {
+	width: 450px;
+	margin-right: auto;
+	margin-left: auto;
+	background-color: black;
+
+
+}
+
+#login_text_field_container {
+
+
+	/*background-color: green;*/
+	text-align: center;
+	height: 70px;
+	color: white;
+	font-size: 30px;
+}
+
+#login_text_field {
+	margin-top: 26px;
+	border:2px solid white;
+	padding:5px; 
+	width: 350px;
+	/*background-color: red;*/
+	/*background:#dddddd;*/
+	border-radius:50px;
+	margin-left: auto;
+	margin-right: auto;
+
+}
+
+
+
+#dialpad_container {
+	width: 65%;
+	margin-right: auto;
+	margin-left: auto;
+	/*background-color: red;*/
+
+	height: 400px;
+}
+
+#dialpad_table {
+	margin-right: auto;
+	margin-left: auto;
+
+}
+
+.dial_button {
+	width: 90px;
+}
+.dialpad_button_image {
+	width: 80px;
+	height: 80px;
+}
+
+td {
+	/*background-color: green;*/
+	/*width: 80px;*/
+	text-align: center;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
