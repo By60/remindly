@@ -9,6 +9,7 @@ var path = require('path');
 var handlebars = require('express3-handlebars')
 
 var index = require('./routes/index');
+var user_home = require('./routes/user_home');
 var who = require('./routes/who');
 var when = require('./routes/when');
 var message = require('./routes/message');
@@ -41,12 +42,11 @@ if ('development' == app.get('env')) {
 
 // Add routes here
 app.get('/', index.login);
-app.get('/who', who.addRecipeints);
+app.get('/user_home', user_home.view);
+app.get('/who', who.addRecipients);
 app.get('/when', when.setTime);
 app.get('/message', message.sendMessage);
 
-// Example route
-// app.get('/users', user.list);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
