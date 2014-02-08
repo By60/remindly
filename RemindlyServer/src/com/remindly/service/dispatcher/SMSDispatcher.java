@@ -1,31 +1,154 @@
 package com.remindly.service.dispatcher;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 import com.remindly.service.utils.Configuration;
 import com.remindly.service.utils.Log;
 import com.techventus.server.voice.Voice;
 
 public class SMSDispatcher {
 
+	private static final int SMS_CHARACTER_LIMIT = 160;
+	private static final int BATCH_FREQUENCY = 1000;
+	
 	private String gvUsername, gvPassword;
 	private Voice gvAccount;
 	private Thread dispatcher;
+	private ArrayList<Message> queue;
+	private boolean simulationMode = false;
 	
 	public SMSDispatcher() {
 		gvUsername = Configuration.getString("sms_gv_username");
 		gvPassword = Configuration.getString("sms_gv_password");
+		
+		queue = new ArrayList<Message>();
+		dispatcher = new Thread(new Runnable() {
+			public void run() {
+				while(true) {
+					synchronized(queue) {
+						if(!queue.isEmpty()) {
+							ArrayList<Message> batch = new ArrayList<Message>();
+							for(int i = queue.size() - 1; i >= 0; i--)
+								batch.add(queue.remove(i));
+							dispatch(batch);
+						}
+					}
+					long now = System.currentTimeMillis();
+					while(System.currentTimeMillis() - now < BATCH_FREQUENCY);
+				}
+			}
+		});
+	}
+	
+	public void setSimulationMode(boolean simulationMode) {
+		if(simulationMode)
+			Log.i("SMS Dispatcher set to simulation mode, no texts will actually be sent.");
+		this.simulationMode = simulationMode;
 	}
 	
 	public void init() {
+		if(gvLogin())
+			dispatcher.start();
+	}
+	
+	private boolean gvLogin() {
+		if(gvAccount != null && gvAccount.isLoggedIn())
+			return true;
+		
+		Log.i("Connecting to Google Voice...");
 		try {
-			Log.i("Connecting to Google Voice...");
 			gvAccount = new Voice(gvUsername, gvPassword);
-			if(gvAccount.isLoggedIn())
-				Log.i("Connected to Google Voice!");
-			else
-				Log.w("Unable to log in to Google Voice account.");
-		} catch(Exception e) {
+		} catch (IOException e) {
 			Log.e("SMS Dispatcher unable to connect or log in to Google Voice account.");
 			Log.stackTrace(e);
+			return false;
 		}
+		
+		if(gvAccount.isLoggedIn()) {
+			Log.i("Connected to Google Voice!");
+			return true;
+		} else {
+			Log.w("Unable to log in to Google Voice account.");
+			return false;
+		}
+	}
+	
+	public void queueMessage(Message message) {
+		synchronized(queue) {
+			queue.add(message);
+		}
+	}
+
+	private void dispatch(ArrayList<Message> batch) {
+		if(batch == null)
+			return;
+
+		if(!gvAccount.isLoggedIn()) {
+			Log.i("Reconnecting to Google Voice...");
+			if(!gvLogin()) {
+				Log.e("Batch of size " + batch.size() + " was canceled because unable to connec to Google Voice.");
+				return;
+			}
+		}
+		
+		for(int i = 0; i < batch.size(); i++) {
+			Message message = batch.get(i);
+			String[] recipients = message.getRecipients().split(",");
+			String formattedMessage = fitText(message.getMessage());
+			
+			// Send message for each phone number
+			for(int j = 0; j < recipients.length; j++) {
+				String phoneNumber = recipients[j];
+				
+				// Check for valid 10-digit phone number before sending
+				if(phoneNumber.matches("\\d{10}")) {
+					boolean success = sendMessage(phoneNumber, formattedMessage);
+					if(!success) {
+						Log.w("A message could not be sent."
+							+ "\n     Phone: " + phoneNumber 
+							+ "\n     Message: " + formattedMessage
+							+ "\n     ID: " + message.getMessageId()
+							+ "\n     GV Logged In: " + gvAccount.isLoggedIn());
+					}
+				} else
+					Log.w("A malformed phone number (" + phoneNumber + ") was detected in message (id: " + message.getMessageId() + ").");
+			}
+		}
+	}
+	
+	private boolean sendMessage(String phoneNumber, String message) {
+		try {
+			String result;
+			if(!simulationMode) {
+				result = gvAccount.sendSMS(phoneNumber, message);
+			} else { 
+				result = "\"ok\":true";
+				Log.p("[SIMULATION] Simulating message sent."
+						+ "\n     Phone: " + phoneNumber
+						+ "\n     Message: " + message);
+				long now = System.currentTimeMillis();
+				while(System.currentTimeMillis() - now < 1000);
+			}
+			
+			// Result returns a JSON with "ok" value set to true
+			if(result.contains("\"ok\":true")) {
+				Log.i("A message was successfully sent to " + phoneNumber + ".");
+				return true;
+			} else {
+				Log.w("Sending message did not recieve success result, result: " + result);
+				return false;
+			}
+		} catch(Exception e) {
+			Log.e("An error occurred while sending a message.");
+			Log.stackTrace(e);
+			return false;
+		}
+	}
+	
+	private String fitText(String message) {
+		if(message.length() <= SMS_CHARACTER_LIMIT)
+			return message;
+		return message.substring(0, SMS_CHARACTER_LIMIT);
 	}
 }

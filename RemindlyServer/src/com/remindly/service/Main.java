@@ -1,6 +1,7 @@
 package com.remindly.service;
 
 import com.remindly.service.database.SQLConnector;
+import com.remindly.service.dispatcher.Message;
 import com.remindly.service.dispatcher.SMSDispatcher;
 import com.remindly.service.utils.Configuration;
 import com.remindly.service.utils.Log;
@@ -14,6 +15,9 @@ public class Main {
 	
 	public static void main(String[] args) {
 		init();
+		
+		Message test = new Message(1, 2, "5104732960,8052676424", "Testing");
+		smsDispatcher.queueMessage(test);
 		
 		while(true);
 	}
@@ -37,9 +41,9 @@ public class Main {
 		// Initialize SMS Dispatcher
 		smsDispatcher = new SMSDispatcher();
 		smsDispatcher.init();
+		if(Configuration.getBoolean("sms_simulation_mode"))
+			smsDispatcher.setSimulationMode(true);
 		
 		Log.i("Initialization complete!");
 	}
-	
-	
 }
