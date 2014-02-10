@@ -1,6 +1,8 @@
 package com.remindly.service.dispatcher;
 
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -122,8 +124,14 @@ public class SMSDispatcher {
 		}
 	}
 	
-	private void updateMessageStatus() {
-		// USE PREPARED STATEMENTS
+	private void updateMessageStatus(int messageId, int status) {
+		String updateMessage = "UPDATE" + context.getDatabase().getDatabaseName() + " SET status = ? WHERE message_id = ?";
+		PreparedStatement preparedStatement = context.getDatabase().prepareStatement(updateMessage);
+		try {
+			preparedStatement.setInt(1, status);
+			preparedStatement.setInt(2, messageId);
+		} catch (SQLException e) { }
+		context.getDatabase().executeUpdate(preparedStatement);
 	}
 	
 	private boolean sendMessage(String phoneNumber, String message) {

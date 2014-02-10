@@ -4,6 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.remindly.service.utils.Log;
+
 public class QueryResult {
 
 	private Statement queryStatement;
@@ -12,6 +14,11 @@ public class QueryResult {
 	public QueryResult(Statement queryStatement, ResultSet result) {
 		this.queryStatement = queryStatement;
 		this.result = result;
+		
+		try {
+			if(result != null)
+				result.first();
+		} catch(SQLException e) { }
 	}
 	
 	public void finish() {
@@ -19,6 +26,8 @@ public class QueryResult {
 			return;
 		
 		try {
+			result.close();
+			queryStatement.getConnection().close();
 			queryStatement.close();
 		} catch(SQLException e) { }
 	}

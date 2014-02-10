@@ -2,6 +2,11 @@ package com.remindly.service.dispatcher;
 
 public class Message {
 	
+	public static final int STATUS_NEW = 0;
+	public static final int STATUS_WAITING = 1;
+	public static final int STATUS_SENT = 2;
+	public static final int STATUS_CANCELED = 3;
+	
 	// Message id from the database
 	private int messageId;
 	
