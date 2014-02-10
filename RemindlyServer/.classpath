@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="jars/jtidy.jar"/>
 	<classpathentry kind="lib" path="jars/mysql-connector-java-5.1.14-bin.jar"/>
 	<classpathentry kind="lib" path="jars/commons-dbcp-1.4.jar"/>
+	<classpathentry kind="lib" path="jars/commons-pool-1.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -2,7 +2,10 @@ package com.remindly.service.dispatcher;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.remindly.service.Context;
 import com.remindly.service.utils.Configuration;
 import com.remindly.service.utils.Log;
 import com.techventus.server.voice.Voice;
@@ -12,13 +15,15 @@ public class SMSDispatcher {
 	private static final int SMS_CHARACTER_LIMIT = 160;
 	private static final int BATCH_FREQUENCY = 1000;
 	
+	private Context context;
 	private String gvUsername, gvPassword;
 	private Voice gvAccount;
 	private Thread dispatcher;
 	private ArrayList<Message> queue;
 	private boolean simulationMode = false;
 	
-	public SMSDispatcher() {
+	public SMSDispatcher(Context context) {
+		
 		gvUsername = Configuration.getString("sms_gv_username");
 		gvPassword = Configuration.getString("sms_gv_password");
 		
@@ -94,13 +99,13 @@ public class SMSDispatcher {
 		
 		for(int i = 0; i < batch.size(); i++) {
 			Message message = batch.get(i);
-			String[] recipients = message.getRecipients().split(",");
+			
+			// Remove duplicate phone numbers
+			Set<String> recipients = toSet(message.getRecipients().split(","));
 			String formattedMessage = fitText(message.getMessage());
 			
 			// Send message for each phone number
-			for(int j = 0; j < recipients.length; j++) {
-				String phoneNumber = recipients[j];
-				
+			for(String phoneNumber : recipients) {
 				// Check for valid 10-digit phone number before sending
 				if(phoneNumber.matches("\\d{10}")) {
 					boolean success = sendMessage(phoneNumber, formattedMessage);
@@ -115,6 +120,10 @@ public class SMSDispatcher {
 					Log.w("A malformed phone number (" + phoneNumber + ") was detected in message (id: " + message.getMessageId() + ").");
 			}
 		}
+	}
+	
+	private void updateMessageStatus() {
+		// USE PREPARED STATEMENTS
 	}
 	
 	private boolean sendMessage(String phoneNumber, String message) {
@@ -150,5 +159,12 @@ public class SMSDispatcher {
 		if(message.length() <= SMS_CHARACTER_LIMIT)
 			return message;
 		return message.substring(0, SMS_CHARACTER_LIMIT);
+	}
+	
+	private Set<String> toSet(String[] array) {
+		Set<String> set = new HashSet<String>();
+		for(int i = 0; i < array.length; i++)
+			set.add(array[i]);
+		return set;
 	}
 }

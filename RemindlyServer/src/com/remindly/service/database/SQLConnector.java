@@ -1,7 +1,6 @@
 package com.remindly.service.database;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,8 +13,7 @@ import com.remindly.service.utils.Log;
 public class SQLConnector {
 
 	private BasicDataSource dataSource;
-	private Connection database;
-	
+
 	public SQLConnector() {
 		dataSource = new BasicDataSource();
 		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
@@ -27,31 +25,39 @@ public class SQLConnector {
 		String port = Configuration.getString("sql_port");
 		dataSource.setUrl("jdbc:mysql://" + address + ":" + port + "/" + databaseName);
 	}
-	
-	public void init() {
+
+	public void testDatabase() {
+		Log.i("Testing database connection...");
+		Connection database = obtainDatabase();
+		if(database != null) {
+			Log.i("Database successfully connected.");
+			finishDatabase(database);
+		} else {
+			Log.w("Database connection test failed.");
+		}
+	}
+
+	private Connection obtainDatabase() {
+		Connection database = null;
 		try {
-			Log.i("Initializing connection to MySQL database...");
 			database = dataSource.getConnection();
-			Log.i("Successfully connected to database!");
-		} catch(Exception e) {
+		} catch(SQLException e) {
 			Log.e("An error occurred while connecting to MySQL database.");
 			Log.stackTrace(e);
 		}
+		return database;
 	}
-	
-	public void stop() {
+
+	private void finishDatabase(Connection database) {
 		if(database == null)
 			return;
-		
 		try {
 			database.close();
-		} catch (SQLException e) {
-			Log.e("An error occurred closing the database.");
-			Log.stackTrace(e);
-		}
+		} catch(SQLException e) { }
 	}
-	
+
 	public QueryResult executeQuery(String query) {
+		Connection database = obtainDatabase();
 		if(database == null)
 			return null;
 		
@@ -65,12 +71,13 @@ public class SQLConnector {
 			return null;
 		}
 	}
-	
+
 	// Returns the number of rows affected by the the update, or -1 if an error occurred
 	public int executeUpdate(String query) {
+		Connection database = obtainDatabase();
 		if(database == null)
 			return -1;
-		
+
 		try {
 			Statement statement = database.createStatement();
 			int rowsAffected = statement.executeUpdate(query);
