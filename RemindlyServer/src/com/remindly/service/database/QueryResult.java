@@ -14,11 +14,6 @@ public class QueryResult {
 	public QueryResult(Statement queryStatement, ResultSet result) {
 		this.queryStatement = queryStatement;
 		this.result = result;
-		
-		try {
-			if(result != null)
-				result.first();
-		} catch(SQLException e) { }
 	}
 	
 	public void finish() {

@@ -1,14 +1,13 @@
 package com.remindly.service.dispatcher;
 
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 import com.remindly.service.Context;
 import com.remindly.service.utils.Configuration;
+import com.remindly.service.utils.DatabaseUtils;
 import com.remindly.service.utils.Log;
 import com.techventus.server.voice.Voice;
 
@@ -25,28 +24,32 @@ public class SMSDispatcher {
 	private boolean simulationMode = false;
 	
 	public SMSDispatcher(Context context) {
+		this.context = context;
 		
 		gvUsername = Configuration.getString("sms_gv_username");
 		gvPassword = Configuration.getString("sms_gv_password");
 		
 		queue = new ArrayList<Message>();
-		dispatcher = new Thread(new Runnable() {
-			public void run() {
-				while(true) {
-					synchronized(queue) {
-						if(!queue.isEmpty()) {
-							ArrayList<Message> batch = new ArrayList<Message>();
-							for(int i = queue.size() - 1; i >= 0; i--)
-								batch.add(queue.remove(i));
-							dispatch(batch);
-						}
-					}
-					long now = System.currentTimeMillis();
-					while(System.currentTimeMillis() - now < BATCH_FREQUENCY);
-				}
-			}
-		});
+		dispatcher = new Thread(dispatcherThread);
 	}
+	
+	private Runnable dispatcherThread = new Runnable() {
+		public void run() {
+			while(true) {
+				synchronized(queue) {
+					if(!queue.isEmpty()) {
+						ArrayList<Message> batch = new ArrayList<Message>();
+						for(int i = queue.size() - 1; i >= 0; i--)
+							batch.add(queue.remove(i));
+						dispatch(batch);
+					}
+				}
+				try {
+					Thread.sleep(BATCH_FREQUENCY);
+				} catch (InterruptedException e) { }
+			}
+		}
+	};
 	
 	public void setSimulationMode(boolean simulationMode) {
 		if(simulationMode)
@@ -86,6 +89,12 @@ public class SMSDispatcher {
 			queue.add(message);
 		}
 	}
+	
+	public void queueMessages(ArrayList<Message> messages) {
+		synchronized(queue) {
+			queue.addAll(messages);
+		}
+	}
 
 	private void dispatch(ArrayList<Message> batch) {
 		if(batch == null)
@@ -117,21 +126,13 @@ public class SMSDispatcher {
 							+ "\n     Message: " + formattedMessage
 							+ "\n     ID: " + message.getMessageId()
 							+ "\n     GV Logged In: " + gvAccount.isLoggedIn());
+					} else {
+						DatabaseUtils.updateMessageStatus(context, message.getMessageId(), Message.STATUS_SENT);
 					}
 				} else
 					Log.w("A malformed phone number (" + phoneNumber + ") was detected in message (id: " + message.getMessageId() + ").");
 			}
 		}
-	}
-	
-	private void updateMessageStatus(int messageId, int status) {
-		String updateMessage = "UPDATE" + context.getDatabase().getDatabaseName() + " SET status = ? WHERE message_id = ?";
-		PreparedStatement preparedStatement = context.getDatabase().prepareStatement(updateMessage);
-		try {
-			preparedStatement.setInt(1, status);
-			preparedStatement.setInt(2, messageId);
-		} catch (SQLException e) { }
-		context.getDatabase().executeUpdate(preparedStatement);
 	}
 	
 	private boolean sendMessage(String phoneNumber, String message) {

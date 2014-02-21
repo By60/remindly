@@ -14,9 +14,9 @@ public class Context {
 		database.testDatabase();
 
 		smsDispatcher = new SMSDispatcher(this);
-		smsDispatcher.init();
 		if(Configuration.getBoolean("sms_simulation_mode"))
 			smsDispatcher.setSimulationMode(true);
+		smsDispatcher.init();
 	}
 	
 	public SQLConnector getDatabase() {
