@@ -126,11 +126,14 @@ public class SMSDispatcher {
 							+ "\n     Message: " + formattedMessage
 							+ "\n     ID: " + message.getMessageId()
 							+ "\n     GV Logged In: " + gvAccount.isLoggedIn());
+						DatabaseUtils.updateMessageStatus(context, message.getMessageId(), Message.STATUS_ERROR);
 					} else {
 						DatabaseUtils.updateMessageStatus(context, message.getMessageId(), Message.STATUS_SENT);
 					}
-				} else
+				} else {
 					Log.w("A malformed phone number (" + phoneNumber + ") was detected in message (id: " + message.getMessageId() + ").");
+					DatabaseUtils.updateMessageStatus(context, message.getMessageId(), Message.STATUS_ERROR);
+				}
 			}
 		}
 	}

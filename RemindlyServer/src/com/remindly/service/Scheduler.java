@@ -33,7 +33,7 @@ public class Scheduler {
 	private Runnable schedulerThread = new Runnable() {
 		public void run() {
 			while(true) {
-				Log.i("SCHEDULER CYCLE #" + cycleCounter);
+				Log.i("SCHEDULER CYCLE #" + cycleCounter + " at " + TimeUtils.currentReadableTime());
 				validateEpochTimes();
 				collectAndDispatch();
 				
