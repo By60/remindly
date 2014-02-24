@@ -4,8 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.remindly.service.utils.Log;
-
 public class QueryResult {
 
 	private Statement queryStatement;
@@ -55,6 +53,17 @@ public class QueryResult {
 		
 		try {
 			return result.getInt(columnIndex);
+		} catch(SQLException e) {
+			return -1;
+		}
+	}
+	
+	public long getLong(String columnIndex) {
+		if(result == null)
+			return -1;
+		
+		try {
+			return result.getLong(columnIndex);
 		} catch(SQLException e) {
 			return -1;
 		}

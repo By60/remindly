@@ -5,7 +5,7 @@ import com.remindly.service.utils.Log;
 
 public class Main {
 
-	public static final String VERSION = "v1.0_alpha";
+	public static final String VERSION = "v1.1";
 	
 	private static Context context;
 	private static Scheduler scheduler;
