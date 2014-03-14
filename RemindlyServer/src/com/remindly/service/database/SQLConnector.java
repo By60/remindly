@@ -7,6 +7,7 @@ import java.sql.SQLException;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
+import com.remindly.service.Main;
 import com.remindly.service.utils.Configuration;
 import com.remindly.service.utils.Log;
 
@@ -24,7 +25,7 @@ public class SQLConnector {
 		databaseName = Configuration.getString("sql_database");
 		String address = Configuration.getString("sql_address");
 		String port = Configuration.getString("sql_port");
-		dataSource.setUrl("jdbc:mysql://" + address + ":" + port + "/" + databaseName);
+		dataSource.setUrl("jdbc:mysql://" + address + ":" + port + "/" + databaseName + "?autoReconnect=true");
 	}
 
 	public void testDatabase() {
@@ -49,6 +50,7 @@ public class SQLConnector {
 		} catch(SQLException e) {
 			Log.e("An error occurred while connecting to MySQL database.");
 			Log.stackTrace(e);
+			checkException(e);
 		}
 		return database;
 	}
@@ -58,7 +60,9 @@ public class SQLConnector {
 			return;
 		try {
 			database.close();
-		} catch(SQLException e) { }
+		} catch(SQLException e) {
+			checkException(e);
+		}
 	}
 	
 	public PreparedStatement prepareStatement(String sql) {
@@ -70,6 +74,7 @@ public class SQLConnector {
 			PreparedStatement preparedStatement = database.prepareStatement(sql);
 			return preparedStatement;
 		} catch (SQLException e) {
+			checkException(e);
 			return null;
 		}
 	}
@@ -84,6 +89,7 @@ public class SQLConnector {
 		} catch(SQLException e) {
 			Log.e("An error occurred while executing a SQL query.");
 			Log.stackTrace(e);
+			checkException(e);
 			return null;
 		}
 	}
@@ -100,7 +106,14 @@ public class SQLConnector {
 		} catch(SQLException e) {
 			Log.e("An error occurred while executing a SQL update query.");
 			Log.stackTrace(e);
+			checkException(e);
 			return -1;
 		}
+	}
+	
+	private void checkException(Exception e) {
+		if(e instanceof com.mysql.jdbc.exceptions.jdbc4.CommunicationsException)
+			Main.dispatchEmergencyMessage("[EMERGENCY] Remindly server may have crashed! "
+				+ "If you are receiving this, notify the server administrator immediately.");
 	}
 }

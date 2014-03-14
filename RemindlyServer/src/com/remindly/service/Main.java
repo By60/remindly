@@ -1,5 +1,6 @@
 package com.remindly.service;
 
+import com.remindly.service.dispatcher.Message;
 import com.remindly.service.utils.Configuration;
 import com.remindly.service.utils.Log;
 
@@ -39,5 +40,13 @@ public class Main {
 		scheduler.init();
 		
 		Log.i("Initialization complete!");
+	}
+	
+	public static void dispatchEmergencyMessage(String message) {
+		if(context != null) {
+			String emergencyContacts = Configuration.getString("emergency_contacts");
+			context.getSMSDispatcher().queueMessage(new Message(-1, -1, emergencyContacts, message));
+			Log.i("An emergency message was dispatched.");
+		}
 	}
 }

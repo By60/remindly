@@ -103,7 +103,7 @@ public class SMSDispatcher {
 		if(!gvAccount.isLoggedIn()) {
 			Log.i("Reconnecting to Google Voice...");
 			if(!gvLogin()) {
-				Log.e("Batch of size " + batch.size() + " was canceled because unable to connec to Google Voice.");
+				Log.e("Batch of size " + batch.size() + " was canceled because unable to connect to Google Voice.");
 				return;
 			}
 		}

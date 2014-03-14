@@ -8,6 +8,8 @@ import com.remindly.service.Context;
 public class DatabaseUtils {
 	
 	public static void updateMessageStatus(Context context, int messageId, int status) {
+		if(messageId == -1)
+			return;
 		String updateMessage = "UPDATE Messages SET status = ? WHERE message_id = ?";
 		PreparedStatement preparedStatement = context.getDatabase().prepareStatement(updateMessage);
 		try {
