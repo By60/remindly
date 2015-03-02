@@ -20,12 +20,12 @@ public class Scheduler {
 	public Scheduler(Context context) {
 		this.context = context;
 		
-		int minutes = Configuration.getInteger("scheduler_frequency");
-		frequency = minutes * 60000;
+		float minutes = Configuration.getFloat("scheduler_frequency");
+		frequency = (long)(minutes * 60000);
 	}
 	
 	public void init() {
-		Log.i("Scheduler initialized, frequency set to " + (frequency / 60000) + " minutes.");
+		Log.i("Scheduler initialized, frequency set to " + (frequency / 60000) + " minutes (" + frequency + " ms.).");
 		Thread scheduler = new Thread(schedulerThread);
 		scheduler.start();
 	}

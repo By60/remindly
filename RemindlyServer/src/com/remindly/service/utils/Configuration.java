@@ -34,15 +34,15 @@ public class Configuration {
 		return configuration.getProperty(key);
 	}
 	
-	public static int getInteger(String key) {
+	public static float getFloat(String key) {
 		if(!validateConfiguration(key))
 			return -1;
 		
 		String value = configuration.getProperty(key);
 		try {
-			return Integer.parseInt(value);
+			return Float.parseFloat(value);
 		} catch(Exception e) {
-			Log.w("Unable to parse \"" + value + "\" to int from configuration file.");
+			Log.w("Unable to parse \"" + value + "\" to float from configuration file.");
 			return -1;
 		}
 	}
