@@ -1,15 +1,16 @@
 package com.remindly.service.dispatcher;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.nexmo.messaging.sdk.NexmoSmsClient;
+import com.nexmo.messaging.sdk.SmsSubmissionResult;
+import com.nexmo.messaging.sdk.messages.TextMessage;
 import com.remindly.service.Context;
 import com.remindly.service.utils.Configuration;
 import com.remindly.service.utils.DatabaseUtils;
 import com.remindly.service.utils.Log;
-import com.techventus.server.voice.Voice;
 
 public class SMSDispatcher {
 
@@ -17,8 +18,8 @@ public class SMSDispatcher {
 	private static final int BATCH_FREQUENCY = 1000;
 	
 	private Context context;
-	private String gvUsername, gvPassword;
-	private Voice gvAccount;
+	private String apiKey, apiSecret, senderNumber;
+	private NexmoSmsClient nexmoClient;
 	private Thread dispatcher;
 	private ArrayList<Message> queue;
 	private boolean simulationMode = false;
@@ -26,8 +27,9 @@ public class SMSDispatcher {
 	public SMSDispatcher(Context context) {
 		this.context = context;
 		
-		gvUsername = Configuration.getString("sms_gv_username");
-		gvPassword = Configuration.getString("sms_gv_password");
+		apiKey = Configuration.getString("api_key");
+		apiSecret = Configuration.getString("api_secret");
+		senderNumber = Configuration.getString("sender_number");
 		
 		queue = new ArrayList<Message>();
 		dispatcher = new Thread(dispatcherThread);
@@ -58,28 +60,22 @@ public class SMSDispatcher {
 	}
 	
 	public void init() {
-		if(gvLogin())
+		if(login())
 			dispatcher.start();
 	}
 	
-	private boolean gvLogin() {
-		if(gvAccount != null && gvAccount.isLoggedIn())
+	private boolean login() {
+		if(nexmoClient != null)
 			return true;
 		
-		Log.i("Connecting to Google Voice...");
+		Log.i("Connecting to Nexmo...");
 		try {
-			gvAccount = new Voice(gvUsername, gvPassword);
-		} catch (IOException e) {
-			Log.e("SMS Dispatcher unable to connect or log in to Google Voice account.");
-			Log.stackTrace(e);
-			return false;
-		}
-		
-		if(gvAccount.isLoggedIn()) {
-			Log.i("Connected to Google Voice!");
+			nexmoClient = new NexmoSmsClient(apiKey, apiSecret);
+			Log.i("Successfully connected to Nexmo!");
 			return true;
-		} else {
-			Log.w("Unable to log in to Google Voice account.");
+		} catch (Exception e) {
+			Log.e("SMS Dispatcher unable to connect or log in to Nexmo account.");
+			Log.stackTrace(e);
 			return false;
 		}
 	}
@@ -99,14 +95,6 @@ public class SMSDispatcher {
 	private void dispatch(ArrayList<Message> batch) {
 		if(batch == null)
 			return;
-
-		if(!gvAccount.isLoggedIn()) {
-			Log.i("Reconnecting to Google Voice...");
-			if(!gvLogin()) {
-				Log.e("Batch of size " + batch.size() + " was canceled because unable to connect to Google Voice.");
-				return;
-			}
-		}
 		
 		for(int i = 0; i < batch.size(); i++) {
 			Message message = batch.get(i);
@@ -124,8 +112,7 @@ public class SMSDispatcher {
 						Log.w("A message could not be sent."
 							+ "\n     Phone: " + phoneNumber 
 							+ "\n     Message: " + formattedMessage
-							+ "\n     ID: " + message.getMessageId()
-							+ "\n     GV Logged In: " + gvAccount.isLoggedIn());
+							+ "\n     ID: " + message.getMessageId());
 						DatabaseUtils.updateMessageStatus(context, message.getMessageId(), Message.STATUS_ERROR);
 					} else {
 						DatabaseUtils.updateMessageStatus(context, message.getMessageId(), Message.STATUS_SENT);
@@ -140,11 +127,14 @@ public class SMSDispatcher {
 	
 	private boolean sendMessage(String phoneNumber, String message) {
 		try {
-			String result;
+			// Nexmo requires 1 in front of US phone numbers
+			phoneNumber = "1" + phoneNumber;
+			
+			SmsSubmissionResult[] results = null;
 			if(!simulationMode) {
-				result = gvAccount.sendSMS(phoneNumber, message);
-			} else { 
-				result = "\"ok\":true";
+				TextMessage textMessage = new TextMessage(senderNumber, phoneNumber, message);
+				results = nexmoClient.submitMessage(textMessage);
+			} else {
 				Log.p("[SIMULATION] Simulating message sent."
 						+ "\n     Phone: " + phoneNumber
 						+ "\n     Message: " + message);
@@ -152,13 +142,18 @@ public class SMSDispatcher {
 				while(System.currentTimeMillis() - now < 1000);
 			}
 			
-			// Result returns a JSON with "ok" value set to true
-			if(result.contains("\"ok\":true")) {
-				Log.i("A message was successfully sent to " + phoneNumber + ".");
-				return true;
-			} else {
-				Log.w("Sending message did not recieve success result, result: " + result);
+			if(results.length < 1) {
+				Log.w("Nexmo client did not return any results.");
 				return false;
+			} else {
+				SmsSubmissionResult result = results[0];
+				if(result.getStatus() == SmsSubmissionResult.STATUS_OK) {
+					Log.i("A message was successfully sent to " + phoneNumber + ".");
+					return true;
+				} else {
+					Log.w("Sending message did not recieve success result, result: " + result.getStatus());
+					return false;
+				}
 			}
 		} catch(Exception e) {
 			Log.e("An error occurred while sending a message.");
