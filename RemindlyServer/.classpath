@@ -2,14 +2,14 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="jars/mysql-connector-java-5.1.14-bin.jar"/>
-	<classpathentry kind="lib" path="/Users/brian/git/RemindlyService/RemindlyServer/jars/commons-codec-1.5.jar"/>
-	<classpathentry kind="lib" path="/Users/brian/git/RemindlyService/RemindlyServer/jars/commons-logging.jar"/>
-	<classpathentry kind="lib" path="/Users/brian/git/RemindlyService/RemindlyServer/jars/httpclient-4.1.1.jar"/>
-	<classpathentry kind="lib" path="/Users/brian/git/RemindlyService/RemindlyServer/jars/httpcore-4.1.jar"/>
-	<classpathentry kind="lib" path="/Users/brian/git/RemindlyService/RemindlyServer/jars/nexmo-sdk.jar"/>
-	<classpathentry kind="lib" path="/Users/brian/git/RemindlyService/RemindlyServer/jars/servlet-api-2.5.jar"/>
-	<classpathentry kind="lib" path="/Users/brian/git/RemindlyService/RemindlyServer/jars/commons-dbcp-1.4.jar"/>
-	<classpathentry kind="lib" path="/Users/brian/git/RemindlyService/RemindlyServer/jars/commons-pool-1.6.jar"/>
+	<classpathentry kind="lib" path="/Users/brian/git/aerodroid/remindly_service/RemindlyServer/jars/commons-codec-1.5.jar"/>
+	<classpathentry kind="lib" path="/Users/brian/git/aerodroid/remindly_service/RemindlyServer/jars/commons-dbcp-1.4.jar"/>
+	<classpathentry kind="lib" path="/Users/brian/git/aerodroid/remindly_service/RemindlyServer/jars/commons-logging.jar"/>
+	<classpathentry kind="lib" path="/Users/brian/git/aerodroid/remindly_service/RemindlyServer/jars/commons-pool-1.6.jar"/>
+	<classpathentry kind="lib" path="/Users/brian/git/aerodroid/remindly_service/RemindlyServer/jars/httpclient-4.1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/brian/git/aerodroid/remindly_service/RemindlyServer/jars/httpcore-4.1.jar"/>
+	<classpathentry kind="lib" path="/Users/brian/git/aerodroid/remindly_service/RemindlyServer/jars/mysql-connector-java-5.1.14-bin.jar"/>
+	<classpathentry kind="lib" path="/Users/brian/git/aerodroid/remindly_service/RemindlyServer/jars/nexmo-sdk.jar"/>
+	<classpathentry kind="lib" path="/Users/brian/git/aerodroid/remindly_service/RemindlyServer/jars/servlet-api-2.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
