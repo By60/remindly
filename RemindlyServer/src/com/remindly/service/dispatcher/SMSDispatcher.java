@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.nexmo.messaging.sdk.NexmoSmsClient;
+import com.nexmo.messaging.sdk.NexmoSmsClientSSL;
 import com.nexmo.messaging.sdk.SmsSubmissionResult;
 import com.nexmo.messaging.sdk.messages.TextMessage;
 import com.remindly.service.Context;
@@ -19,7 +19,7 @@ public class SMSDispatcher {
 	
 	private Context context;
 	private String apiKey, apiSecret, senderNumber;
-	private NexmoSmsClient nexmoClient;
+	private NexmoSmsClientSSL nexmoClient;
 	private Thread dispatcher;
 	private ArrayList<Message> queue;
 	private boolean simulationMode = false;
@@ -70,7 +70,7 @@ public class SMSDispatcher {
 		
 		Log.i("Connecting to Nexmo...");
 		try {
-			nexmoClient = new NexmoSmsClient(apiKey, apiSecret);
+			nexmoClient = new NexmoSmsClientSSL(apiKey, apiSecret);
 			Log.i("Successfully connected to Nexmo!");
 			return true;
 		} catch (Exception e) {
